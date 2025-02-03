@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
             #elif defined(__APPLE__)
                 command+= " Mac Development";
             #endif
-            command+= ' ' + argv[1];
+            command+= " " + string(argv[1]);
             command+= " -waitmutex";
 
             system(command.c_str());
@@ -92,10 +92,48 @@ int main(int argc, char *argv[]) {
     } else if (argc == 4) {
         // -- Package command
         if (strcmp(argv[2], "package") == 0) {
+            string command = R"(.\Engine\Build\BatchFiles\RunUAT)";
+            #if defined(_WIN64)
+                command+= ".bat";
+            #elif defined(__linux__) || defined(__APPLE__)
+                command+= ".sh";
+            #else
+                cout << "OS not recognized" << endl;
+                return -1;
+            #endif
+
+            // Configure command
+            command+= " -ScriptsForProject=" + string(argv[1]);
+            command+= " BuildCookRun";
+            command+= " -project=" + string(argv[1]);
+            command+= " -noP4";
+            command+= " -clientconfig=Development";
+            command+= " -serverconfig=Development";
+            command+= " -nocompileeditor";
+            command+= R"( -unrealexe=.\Engine\Binaries\Win64\UnrealEditor-Cmd.exe)";
+            command+= " -utf8output";
+            #if defined(_WIN64)
+                command+= " -platform=Win64";
+            #elif defined(__linux__)
+                command+= " -platform=Linux";
+            #elif defined(__APPLE__)
+                command+= " -platform=Mac";
+            #endif
+            command+= " -build";
+            command+= " -cook";
+            command+= " -allmaps";
+            command+= " -CookCultures=en";
+            command+= " -unversionedcookedcontent";
+            command+= " -stage";
+            command+= " -package";
+            command+= " -stagingdirectory=" + string(argv[3]);
+
+            system(command.c_str());
+
             return 0;
         }
     } else {
-        cerr << "Bad usage" << endl;
+        cout << "Bad usage" << endl;
         return -1;
     }
 
